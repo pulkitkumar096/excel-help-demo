@@ -1,10 +1,9 @@
 import streamlit as st
 from pptx import Presentation
-import openai
 import os
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
+from openai import OpenAI
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 st.set_page_config(page_title="Excel Help Assistant", layout="centered")
 
 st.title("Excel Help Assistant")
@@ -32,10 +31,13 @@ Question:
 {question}
 """
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
+    response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "You are an Excel expert."},
+        {"role": "user", "content": prompt}
+    ]
+)
 
-    st.success(response.choices[0].message.content)
+st.success(response.choices[0].message.content)
     st.video("How to make a Table in Excel.mp4")
