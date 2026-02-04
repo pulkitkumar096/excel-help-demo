@@ -3,42 +3,72 @@ from pptx import Presentation
 import os
 from openai import OpenAI
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
+# =========================
+# CONFIG
+# =========================
 st.set_page_config(page_title="Excel Help Assistant", layout="centered")
 
+# =========================
+# OPENAI CLIENT
+# =========================
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    st.error("OpenAI API key not found. Please add OPENAI_API_KEY in Streamlit Secrets.")
+    st.stop()
+
+client = OpenAI(api_key=api_key)
+
+# =========================
+# UI
+# =========================
 st.title("Excel Help Assistant")
 st.write("Ask any question about creating a Table in Excel")
 
-# Load PPT content
-ppt = Presentation("How to make a Table in Excel.pptx")
-content = ""
+# =========================
+# LOAD PPT CONTENT
+# =========================
+ppt_text = ""
+try:
+    ppt = Presentation("How to make a Table in Excel.pptx")
+    for slide in ppt.slides:
+        for shape in slide.shapes:
+            if hasattr(shape, "text"):
+                ppt_text += shape.text + "\n"
+except Exception as e:
+    st.error("PPT file not found or unreadable.")
+    st.stop()
 
-for slide in ppt.slides:
-    for shape in slide.shapes:
-        if hasattr(shape, "text"):
-            content += shape.text + "\n"
-
+# =========================
+# USER INPUT
+# =========================
 question = st.text_input("Type your question")
 
-if question:
+# =========================
+# AI RESPONSE
+# =========================
+if question.strip() != "":
     prompt = f"""
 You are an Excel expert.
-Use the instructions below to answer clearly.
 
-Instructions:
-{content}
+Use the instructions below to answer clearly and step-by-step.
 
-Question:
+INSTRUCTIONS:
+{ppt_text}
+
+USER QUESTION:
 {question}
 """
 
-    response = client.responses.create(
-        model="gpt-4.1-mini",
-        input=prompt
-    )
+    try:
+        response = client.responses.create(
+            model="gpt-4o-mini",
+            input=prompt
+        )
 
-    st.success(response.output_text)
+        st.success(response.output_text)
 
-    st.video("How to make a Table in Excel.mp4")
+        # Show video help
+        st.video("How to make a Table in Excel.mp4")
+
+    except Exception as e:
+        st.error("AI request failed. Please check your API key or model access.")
