@@ -3,7 +3,7 @@ from pptx import Presentation
 import os
 from openai import OpenAI
 
-# OpenAI client
+# Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 st.set_page_config(page_title="Excel Help Assistant", layout="centered")
@@ -14,6 +14,7 @@ st.write("Ask any question about creating a Table in Excel")
 # Load PPT content
 ppt = Presentation("How to make a Table in Excel.pptx")
 content = ""
+
 for slide in ppt.slides:
     for shape in slide.shapes:
         if hasattr(shape, "text"):
@@ -34,10 +35,10 @@ Question:
 """
 
     response = client.responses.create(
-    model="gpt-4.1-mini",
-    input=prompt
-)
+        model="gpt-4.1-mini",
+        input=prompt
+    )
 
-st.success(response.output_text)
+    st.success(response.output_text)
 
     st.video("How to make a Table in Excel.mp4")
