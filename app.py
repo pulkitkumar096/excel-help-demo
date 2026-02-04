@@ -33,14 +33,11 @@ Question:
 {question}
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are an Excel expert."},
-            {"role": "user", "content": prompt}
-        ]
-    )
+    response = client.responses.create(
+    model="gpt-4.1-mini",
+    input=prompt
+)
 
-    st.success(response.choices[0].message.content)
+st.success(response.output_text)
 
     st.video("How to make a Table in Excel.mp4")
